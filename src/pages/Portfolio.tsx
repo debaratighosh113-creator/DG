@@ -12,6 +12,7 @@ import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
 import { usePortfolioData } from '@/lib/usePortfolioData';
+import { useSiteSettings } from '@/lib/useSiteSettings';
 
 function setMeta(
   attr: 'name' | 'property',
@@ -38,13 +39,29 @@ function setCanonical(url: string) {
 
   if (!canonical) {
     canonical = document.createElement('link');
-
     canonical.rel = 'canonical';
-
     document.head.appendChild(canonical);
   }
 
   canonical.href = url;
+}
+
+function setFavicon(url: string) {
+  const existingIcons = document.querySelectorAll(
+    'link[rel="icon"]'
+  );
+
+  existingIcons.forEach((icon) => {
+    icon.remove();
+  });
+
+  const favicon = document.createElement('link');
+
+  favicon.rel = 'icon';
+  favicon.type = 'image/png';
+  favicon.href = url;
+
+  document.head.appendChild(favicon);
 }
 
 function getAbsoluteUrl(
@@ -84,6 +101,11 @@ export default function Portfolio() {
     error,
   } = usePortfolioData();
 
+  const {
+    settings,
+    loading: settingsLoading,
+  } = useSiteSettings();
+
   const profile = data.profile;
 
   const name =
@@ -91,31 +113,50 @@ export default function Portfolio() {
     'GNM Nursing Portfolio';
 
   useEffect(() => {
-    const title = profile?.full_name?.trim()
-      ? `${profile.full_name.trim()} | GNM Nursing Portfolio`
-      : 'GNM Nursing Portfolio';
+    const title =
+      settings.site_title.trim() ||
+      (profile?.full_name?.trim()
+        ? `${profile.full_name.trim()} | GNM Nursing Portfolio`
+        : 'GNM Nursing Portfolio');
 
     const description =
       profile?.bio?.trim() ||
       'GNM Nursing portfolio showcasing clinical training, education, skills, certifications, and patient-centered care.';
 
     /*
-     * Use the profile hero image when available.
-     * Otherwise keep the existing local fallback.
+     * Keep the profile hero image for SEO/social sharing.
      */
     const imageUrl =
       getAbsoluteUrl(profile?.hero_image) ??
       `${window.location.origin}/images/image.png`;
 
     /*
-     * The canonical URL should represent the actual
-     * portfolio origin, without query parameters or hashes.
+     * Use the admin-controlled favicon.
+     */
+    const faviconUrl =
+      getAbsoluteUrl(settings.favicon_url) ??
+      `${window.location.origin}/images/image.png`;
+
+    /*
+     * The canonical URL represents the actual
+     * portfolio origin without query parameters or hashes.
      */
     const canonicalUrl =
       window.location.origin + '/';
 
+    /*
+     * Browser title.
+     */
     document.title = title;
 
+    /*
+     * Browser favicon.
+     */
+    setFavicon(faviconUrl);
+
+    /*
+     * Standard metadata.
+     */
     setMeta(
       'name',
       'description',
@@ -128,6 +169,9 @@ export default function Portfolio() {
       name
     );
 
+    /*
+     * Open Graph metadata.
+     */
     setMeta(
       'property',
       'og:title',
@@ -158,6 +202,9 @@ export default function Portfolio() {
       'profile'
     );
 
+    /*
+     * Twitter metadata.
+     */
     setMeta(
       'name',
       'twitter:title',
@@ -176,6 +223,9 @@ export default function Portfolio() {
       imageUrl
     );
 
+    /*
+     * Canonical URL.
+     */
     setCanonical(canonicalUrl);
 
     /*
@@ -237,14 +287,18 @@ export default function Portfolio() {
 
     return () => {
       /*
-       * Do not remove metadata on unmount because
-       * the application may remount the portfolio
-       * during client-side navigation.
+       * Keep metadata during client-side navigation.
        */
     };
-    }, [profile, name]);
+  }, [
+    profile,
+    name,
+    settings.site_title,
+    settings.favicon_url,
+    settingsLoading,
+  ]);
 
-  if (loading) {
+  if (loading || settingsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink-50">
         <div
