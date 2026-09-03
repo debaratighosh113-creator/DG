@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-# Block admin panel from indexing
-Disallow: /#/admin
+# Block admin panel from crawling
+Disallow: /admin
+Disallow: /admin/
 
 # Sitemap
-Sitemap: /sitemap.xml
+Sitemap: https://dg-ashy.vercel.app/sitemap.xml
