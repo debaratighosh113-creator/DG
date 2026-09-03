@@ -87,26 +87,30 @@ export default function CrudEditor({
       if (empty) continue;
 
       if (field.type === 'number') {
-        const numberValue = Number(value);
+  const numberValue = Number(value);
 
-        if (!Number.isFinite(numberValue)) {
-          return `${field.label} must be a valid number.`;
-        }
+  if (!Number.isFinite(numberValue)) {
+    return `${field.label} must be a valid number.`;
+  }
 
-        if (
-          field.min !== undefined &&
-          numberValue < field.min
-        ) {
-          return `${field.label} must be at least ${field.min}.`;
-        }
+  if (!Number.isInteger(numberValue)) {
+    return `${field.label} must be a whole number.`;
+  }
 
-        if (
-          field.max !== undefined &&
-          numberValue > field.max
-        ) {
-          return `${field.label} must not exceed ${field.max}.`;
-        }
-      }
+  if (
+    field.min !== undefined &&
+    numberValue < field.min
+  ) {
+    return `${field.label} must be at least ${field.min}.`;
+  }
+
+  if (
+    field.max !== undefined &&
+    numberValue > field.max
+  ) {
+    return `${field.label} must not exceed ${field.max}.`;
+  }
+}
 
       if (field.type === 'select' && field.options) {
         if (!field.options.includes(String(value))) {
