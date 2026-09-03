@@ -1,4 +1,4 @@
-import { Heart, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const links = [
@@ -40,16 +40,12 @@ export default function Navbar({ name }: { name: string }) {
           aria-label={`${name} - Home`}
         >
           {/* Logo mark */}
-          <span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white shadow-sm transition-transform duration-200 group-hover:scale-105"
-            aria-hidden="true"
-          >
-            <Heart
-              className="h-5 w-5"
-              fill="currentColor"
-              strokeWidth={2}
-            />
-          </span>
+          <img
+  src="/images/image.png"
+  alt=""
+  className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-white/70 transition-transform duration-200 group-hover:scale-105"
+  aria-hidden="true"
+/>
 
           {/* Brand name */}
           <span className="flex flex-col leading-none">
