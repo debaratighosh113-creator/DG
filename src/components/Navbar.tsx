@@ -40,12 +40,14 @@ export default function Navbar({ name }: { name: string }) {
           aria-label={`${name} - Home`}
         >
           {/* Logo mark */}
-          <img
-  src="/images/image.png"
-  alt=""
-  className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-white/70 transition-transform duration-200 group-hover:scale-105"
-  aria-hidden="true"
-/>
+<div className="h-12 w-10 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-white/70">
+  <img
+    src="/images/image.png"
+    alt=""
+    className="h-full w-full object-contain"
+    aria-hidden="true"
+  />
+</div>
 
           {/* Brand name */}
           <span className="flex flex-col leading-none">
