@@ -97,6 +97,10 @@ export default function CrudEditor({
     return `${field.label} must be a whole number.`;
   }
 
+  if (numberValue < 0) {
+    return `${field.label} must be 0 or greater.`;
+  }
+
   if (
     field.min !== undefined &&
     numberValue < field.min
