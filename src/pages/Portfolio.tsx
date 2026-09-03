@@ -277,8 +277,10 @@ export default function Portfolio() {
               }
             : undefined,
         sameAs: [
-          profile?.linkedin_url?.trim() ||
-            undefined,
+          profile?.linkedin_url?.trim() || undefined,
+          'https://www.instagram.com/debarati_311/',
+          'https://www.facebook.com/rajashree.ghosh.33633',
+          'https://www.facebook.com/profile.php?id=100087452551747',
         ].filter(Boolean),
       });
 

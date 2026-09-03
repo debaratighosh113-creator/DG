@@ -1,5 +1,6 @@
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useSiteSettings } from '@/lib/useSiteSettings';
 
 const links = [
   { href: '#about', label: 'About' },
@@ -16,13 +17,21 @@ export default function Navbar({ name }: { name: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const { settings } = useSiteSettings();
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
 
     window.addEventListener('scroll', onScroll);
 
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
+
+  const logoUrl = settings.logo_url || '/images/image.png';
 
   return (
     <header
@@ -39,15 +48,15 @@ export default function Navbar({ name }: { name: string }) {
           className="group flex items-center gap-3"
           aria-label={`${name} - Home`}
         >
-          {/* Logo mark */}
-<div className="h-12 w-10 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-white/70">
-  <img
-    src="/images/image.png"
-    alt=""
-    className="h-full w-full object-contain"
-    aria-hidden="true"
-  />
-</div>
+          {/* Logo */}
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-white/70">
+            <img
+              src={logoUrl}
+              alt=""
+              className="h-full w-full object-cover object-[50%_15%]"
+              aria-hidden="true"
+            />
+          </div>
 
           {/* Brand name */}
           <span className="flex flex-col leading-none">
@@ -80,13 +89,21 @@ export default function Navbar({ name }: { name: string }) {
           type="button"
           className="rounded-lg p-2 text-ink-700 transition-colors hover:bg-ink-100 lg:hidden"
           onClick={() => setOpen((value) => !value)}
-          aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-label={
+            open ? 'Close navigation menu' : 'Open navigation menu'
+          }
           aria-expanded={open}
         >
           {open ? (
-            <X className="h-5 w-5" aria-hidden="true" />
+            <X
+              className="h-5 w-5"
+              aria-hidden="true"
+            />
           ) : (
-            <Menu className="h-5 w-5" aria-hidden="true" />
+            <Menu
+              className="h-5 w-5"
+              aria-hidden="true"
+            />
           )}
         </button>
       </nav>

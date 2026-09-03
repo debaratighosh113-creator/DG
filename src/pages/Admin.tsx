@@ -1,23 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
-import { LogOut, ExternalLink, LayoutGrid, User, MessageSquare } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ExternalLink,
+  LayoutGrid,
+  LogOut,
+  MessageSquare,
+  User,
+} from 'lucide-react';
+
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { usePortfolioData } from '@/lib/usePortfolioData';
-import CrudEditor, { type FieldDef } from '@/components/admin/CrudEditor';
-import ProfileEditor from '@/components/admin/ProfileEditor';
+
+import CrudEditor, {
+  type FieldDef,
+} from '@/components/admin/CrudEditor';
 import MessagesPanel from '@/components/admin/MessagesPanel';
-import AdminLogin from '@/pages/AdminLogin';
+import ProfileEditor from '@/components/admin/ProfileEditor';
+import SiteBranding from '@/components/admin/SiteBranding';
+
 import {
-  educationFields,
-  clinicalFields,
-  skillsFields,
-  certificationsFields,
-  projectsFields,
   achievementsFields,
+  certificationsFields,
+  clinicalFields,
+  educationFields,
+  projectsFields,
+  skillsFields,
 } from '@/components/admin/fieldDefs';
+
+import AdminLogin from '@/pages/AdminLogin';
+
 import type { ContactMessage } from '@/lib/types';
 
 type Tab =
+  | 'branding'
   | 'profile'
   | 'education'
   | 'clinical'
@@ -28,6 +43,7 @@ type Tab =
   | 'messages';
 
 const tabs: { id: Tab; label: string }[] = [
+  { id: 'branding', label: 'Site Branding' },
   { id: 'profile', label: 'Profile' },
   { id: 'education', label: 'Education' },
   { id: 'clinical', label: 'Clinical' },
@@ -45,8 +61,8 @@ export default function Admin() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
 
   const { data, reload } = usePortfolioData({
-  realtime: true,
-});
+    realtime: true,
+  });
 
   const loadMessages = useCallback(async () => {
     if (!session) {
@@ -74,7 +90,7 @@ export default function Admin() {
       return;
     }
 
-    loadMessages();
+    void loadMessages();
 
     const channel = supabase
       .channel('admin-messages')
@@ -86,20 +102,23 @@ export default function Admin() {
           table: 'contact_messages',
         },
         () => {
-          loadMessages();
+          void loadMessages();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [session, loadMessages]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink-50">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-ink-200 border-t-teal-600" />
+        <div
+          className="h-10 w-10 animate-spin rounded-full border-2 border-ink-200 border-t-teal-600"
+          aria-label="Loading admin dashboard"
+        />
       </div>
     );
   }
@@ -113,7 +132,10 @@ export default function Admin() {
       <header className="sticky top-0 z-40 border-b border-ink-100 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white"
+              aria-hidden="true"
+            >
               <LayoutGrid className="h-5 w-5" />
             </span>
 
@@ -131,17 +153,25 @@ export default function Admin() {
           <div className="flex items-center gap-3">
             <a
               href="#top"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3.5 py-2 text-sm font-medium text-ink-600 hover:bg-ink-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3.5 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-ink-50"
+              aria-label="View public portfolio"
             >
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
               View site
             </a>
 
             <button
-              onClick={signOut}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ink-100 px-3.5 py-2 text-sm font-medium text-ink-700 hover:bg-ink-200"
+              type="button"
+              onClick={() => void signOut()}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-ink-100 px-3.5 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-200"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
               Sign out
             </button>
           </div>
@@ -151,25 +181,36 @@ export default function Admin() {
       <div className="mx-auto max-w-6xl px-6 py-8">
         <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <nav className="flex gap-2 overflow-x-auto rounded-xl border border-ink-100 bg-white p-2 lg:flex-col">
-              {tabs.map((t) => (
+            <nav
+              className="flex gap-2 overflow-x-auto rounded-xl border border-ink-100 bg-white p-2 lg:flex-col"
+              aria-label="Admin sections"
+            >
+              {tabs.map((item) => (
                 <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTab(item.id)}
                   className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
-                    tab === t.id
+                    tab === item.id
                       ? 'bg-teal-600 text-white'
                       : 'text-ink-600 hover:bg-ink-100'
                   }`}
+                  aria-current={
+                    tab === item.id ? 'page' : undefined
+                  }
                 >
-                  <TabIcon id={t.id} />
+                  <TabIcon id={item.id} />
 
-                  {t.label}
+                  <span>{item.label}</span>
 
-                  {t.id === 'messages' &&
-                    messages.some((m) => !m.read) && (
+                  {item.id === 'messages' &&
+                    messages.some((message) => !message.read) && (
                       <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-bold text-white lg:bg-white lg:text-teal-600">
-                        {messages.filter((m) => !m.read).length}
+                        {
+                          messages.filter(
+                            (message) => !message.read
+                          ).length
+                        }
                       </span>
                     )}
                 </button>
@@ -178,6 +219,15 @@ export default function Admin() {
           </aside>
 
           <main className="rounded-2xl border border-ink-100 bg-white p-6 md:p-8">
+            {tab === 'branding' && (
+              <Section
+                title="Site Branding"
+                subtitle="Manage your website title, navbar logo, and browser tab photo."
+              >
+                <SiteBranding />
+              </Section>
+            )}
+
             {tab === 'profile' && (
               <Section
                 title="Profile"
@@ -200,7 +250,10 @@ export default function Admin() {
                   label="Education"
                   fields={educationFields}
                   items={
-                    data.education as unknown as Record<string, unknown>[]
+                    data.education as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -226,7 +279,10 @@ export default function Admin() {
                   label="Clinical Experience"
                   fields={clinicalFields}
                   items={
-                    data.clinical as unknown as Record<string, unknown>[]
+                    data.clinical as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -253,7 +309,10 @@ export default function Admin() {
                   label="Skills"
                   fields={skillsFields as FieldDef[]}
                   items={
-                    data.skills as unknown as Record<string, unknown>[]
+                    data.skills as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -276,7 +335,10 @@ export default function Admin() {
                   label="Certifications"
                   fields={certificationsFields}
                   items={
-                    data.certifications as unknown as Record<string, unknown>[]
+                    data.certifications as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -302,7 +364,10 @@ export default function Admin() {
                   label="Projects"
                   fields={projectsFields}
                   items={
-                    data.projects as unknown as Record<string, unknown>[]
+                    data.projects as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -326,7 +391,10 @@ export default function Admin() {
                   label="Achievements"
                   fields={achievementsFields}
                   items={
-                    data.achievements as unknown as Record<string, unknown>[]
+                    data.achievements as unknown as Record<
+                      string,
+                      unknown
+                    >[]
                   }
                   onReload={reload}
                   emptyItem={() => ({
@@ -386,12 +454,22 @@ function TabIcon({ id }: { id: Tab }) {
 
   switch (id) {
     case 'profile':
-      return <User className={cls} />;
+      return <User className={cls} aria-hidden="true" />;
 
     case 'messages':
-      return <MessageSquare className={cls} />;
+      return (
+        <MessageSquare
+          className={cls}
+          aria-hidden="true"
+        />
+      );
 
     default:
-      return <LayoutGrid className={cls} />;
+      return (
+        <LayoutGrid
+          className={cls}
+          aria-hidden="true"
+        />
+      );
   }
 }
