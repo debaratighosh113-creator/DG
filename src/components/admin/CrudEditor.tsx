@@ -9,11 +9,12 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import FileUpload from '@/components/admin/FileUpload';
 
 export type FieldDef = {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'select';
+  type: 'text' | 'textarea' | 'number' | 'select' | 'file';
   options?: string[];
   required?: boolean;
   placeholder?: string;
@@ -226,11 +227,7 @@ export default function CrudEditor({
   /**
    * Reorders two adjacent records through a single PostgreSQL RPC.
    *
-   * This replaces the old:
-   *   UPDATE first row
-   *   UPDATE second row
-   *
-   * approach so both changes happen inside one database transaction.
+   * Both sort-order changes happen inside one database transaction.
    */
   const move = async (
     item: Record<string, unknown>,
@@ -333,7 +330,10 @@ export default function CrudEditor({
           className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label={`Add ${label}`}
         >
-          <Plus className="h-4 w-4" aria-hidden="true" />
+          <Plus
+            className="h-4 w-4"
+            aria-hidden="true"
+          />
           Add
         </button>
       </div>
@@ -464,7 +464,11 @@ export default function CrudEditor({
               return (
                 <div key={field.key}>
                   <label
-                    htmlFor={fieldId}
+                    htmlFor={
+                      field.type === 'file'
+                        ? undefined
+                        : fieldId
+                    }
                     className="mb-1.5 block text-sm font-medium text-ink-700"
                   >
                     {field.label}
@@ -510,7 +514,9 @@ export default function CrudEditor({
                       required={field.required}
                       aria-required={field.required}
                     >
-                      <option value="">Select…</option>
+                      <option value="">
+                        Select…
+                      </option>
 
                       {field.options?.map((option) => (
                         <option
@@ -521,6 +527,20 @@ export default function CrudEditor({
                         </option>
                       ))}
                     </select>
+                  ) : field.type === 'file' ? (
+                    <FileUpload
+                      value={String(value ?? '')}
+                      onChange={(url) =>
+                        setField(field.key, url)
+                      }
+                      folder={getUploadFolder(table)}
+                      label={`Upload ${field.label}`}
+                      accept={getUploadAccept(
+                        table,
+                        field.key
+                      )}
+                      maxSizeMb={10}
+                    />
                   ) : (
                     <input
                       id={fieldId}
@@ -590,6 +610,7 @@ export default function CrudEditor({
                   className="h-4 w-4"
                   aria-hidden="true"
                 />
+
                 {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
@@ -598,6 +619,37 @@ export default function CrudEditor({
       )}
     </div>
   );
+}
+
+function getUploadFolder(table: string): string {
+  switch (table) {
+    case 'certifications':
+      return 'certificates';
+
+    case 'education':
+      return 'marksheets';
+
+    case 'projects':
+      return 'projects';
+
+    default:
+      return 'documents';
+  }
+}
+
+function getUploadAccept(
+  table: string,
+  fieldKey: string
+): string {
+  if (
+    table === 'projects' ||
+    fieldKey === 'image' ||
+    fieldKey === 'hero_image'
+  ) {
+    return 'image/jpeg,image/png,image/webp';
+  }
+
+  return 'application/pdf';
 }
 
 function Modal({
